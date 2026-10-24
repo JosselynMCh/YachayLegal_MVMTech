@@ -1,4 +1,6 @@
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
+import re
+import unicodedata
 from app.schemas.chat import (
     ChatRequest, ChatResponse, TranslationInfo, SourceCitation, ReferralService
 )
@@ -22,6 +24,139 @@ class AIService:
     """
 
     @classmethod
+    def evaluate_conversational_intent(
+        cls, 
+        query: str, 
+        effective_lang: str, 
+        dialect: Optional[str] = None
+    ) -> Tuple[Optional[str], Optional[ChatResponse]]:
+        clean = unicodedata.normalize('NFKD', query.lower()).encode('ascii', 'ignore').decode('utf-8')
+        clean = re.sub(r'[^a-z0-9\s]', '', clean).strip()
+        words = clean.split()
+
+        legal_terms = {
+            "despido", "despidieron", "trabajo", "sueldo", "policia", "detenido", "detuvieron",
+            "comisaria", "carcel", "calabozo", "denuncia", "denunciar", "demanda", "demandar",
+            "abogado", "juicio", "juez", "fiscal", "violencia", "golpe", "maltrato", "pegaron",
+            "amenaza", "alimentos", "pension", "hijo", "desalojo", "desalojar", "casa", "terreno",
+            "tierra", "contrato", "herencia", "notificacion", "multa", "discriminacion", "sunafil",
+            "hapirqawan", "maqwawan", "wañuchiy", "chakra", "allpa", "llamkay", "mikhuna"
+        }
+        if any(t in clean for t in legal_terms):
+            return None, None
+
+        gratitude_phrases = ["gracias", "muchas gracias", "te agradezco", "me ayudaste", "me ayudaste bastante", "mil gracias", "anay", "sulpayki", "uraspas"]
+        if any(p in clean for p in gratitude_phrases) and len(words) <= 7:
+            es_text = "¡Con mucho gusto! 😊 Si tienes otra duda o necesitas revisar algún paso o trámite, aquí estoy para orientarte."
+            qu_text = "¡Kusikuypaqmi! 😊 Huk tapukuyniyki kaptinqa utaq ima tramitepas necesitaptiykiqa, kaypim kashani allinta sut'inchasunaykipaq."
+            return "gratitude", ChatResponse(
+                status="answered",
+                input_language=effective_lang,
+                detected_dialect=dialect,
+                normalized_query_es=query,
+                answer=qu_text if effective_lang == "qu" else es_text,
+                translation=TranslationInfo(
+                    language="qu" if effective_lang == "es" else "es",
+                    dialect=dialect,
+                    text=qu_text if effective_lang == "es" else es_text,
+                    validated=True,
+                    notes="Agradecimiento conversacional natural."
+                ),
+                sources=[],
+                limitations=[],
+                requires_human_review=False,
+                next_steps=[
+                    "Puedes formular una nueva consulta sobre tus derechos cuando lo necesites."
+                ]
+            )
+
+        farewell_phrases = ["adios", "hasta luego", "nos vemos", "chau", "chao", "cuidate", "tupananchiskama", "tinkunankama", "rikuypas"]
+        if any(p in clean for p in farewell_phrases) and len(words) <= 5:
+            es_text = "¡Hasta luego! Que tengas un excelente día. Si en otro momento necesitas consultar tus derechos o trámites en el Perú, aquí estaré."
+            qu_text = "¡Tupananchiskama! Allinllata puriy. Huk p'unchawpi hayñiykikunamanta tapukuyta munaspaqa, kaypim suyasayki."
+            return "farewell", ChatResponse(
+                status="answered",
+                input_language=effective_lang,
+                detected_dialect=dialect,
+                normalized_query_es=query,
+                answer=qu_text if effective_lang == "qu" else es_text,
+                translation=TranslationInfo(
+                    language="qu" if effective_lang == "es" else "es",
+                    dialect=dialect,
+                    text=qu_text if effective_lang == "es" else es_text,
+                    validated=True,
+                    notes="Despedida conversacional natural."
+                ),
+                sources=[],
+                limitations=[],
+                requires_human_review=False,
+                next_steps=[]
+            )
+
+        help_phrases = [
+            "necesito ayuda", "necesito que me ayudes", "me puedes ayudar", "puedes ayudarme",
+            "tengo una duda", "quisiera hacerte una consulta", "tengo una consulta",
+            "no se si puedes ayudarme", "quiero hacer una pregunta", "ayuda por favor",
+            "yanapaway", "huk tapukuyniy kashan", "yanapayta munani"
+        ]
+        if any(p in clean for p in help_phrases) and len(words) <= 9:
+            es_text = "¡Claro! Con mucho gusto te ayudo. 😊 Cuéntame qué ha pasado o qué necesitas saber, y lo revisamos paso a paso con las normas peruanas oficiales."
+            qu_text = "¡Arí, tukuy sunquwan yanapasayki! 😊 Willariway ima pasarqasunki utaq imamantam yachayta munanki, chayta allillamanta qhawarisunchik."
+            return "help_opening", ChatResponse(
+                status="answered",
+                input_language=effective_lang,
+                detected_dialect=dialect,
+                normalized_query_es=query,
+                answer=qu_text if effective_lang == "qu" else es_text,
+                translation=TranslationInfo(
+                    language="qu" if effective_lang == "es" else "es",
+                    dialect=dialect,
+                    text=qu_text if effective_lang == "es" else es_text,
+                    validated=True,
+                    notes="Apertura conversacional empática."
+                ),
+                sources=[],
+                limitations=[],
+                requires_human_review=False,
+                next_steps=[
+                    "Cuéntame el caso o situación con tus propias palabras.",
+                    "Puedes consultar sobre derechos laborales, detención policial, violencia familiar, alimentos o trámites."
+                ]
+            )
+
+        greeting_phrases = [
+            "hola", "holaaa", "holaa", "buenos dias", "buenas tardes", "buenas noches", 
+            "que tal", "como estas", "buenas", "allillanchu", "rimaykullayki", "napaykullayki"
+        ]
+        is_greeting = any(clean == g or clean.startswith(g + " ") or clean.endswith(" " + g) for g in greeting_phrases) or (any(g in clean for g in greeting_phrases) and len(words) <= 4)
+        if is_greeting and len(words) <= 6:
+            es_text = "¡Hola! 😊 Bienvenido/a a Yachay Legal AI. Estoy aquí para ayudarte a comprender tus derechos, las normas peruanas y los trámites legales de manera sencilla. ¿Qué te gustaría consultar hoy?"
+            qu_text = "¡Allillanchu! 😊 Allinmi hamusqayki Yachay Legal AI nisqaman. Hayñiykikunata, perupa kamachikuyninkunata hinaspa trámites legales nisqata intiendinaykipaqmi kaypi kani. ¿Imamantataq yachayta munanki?"
+            return "greeting", ChatResponse(
+                status="answered",
+                input_language=effective_lang,
+                detected_dialect=dialect,
+                normalized_query_es=query,
+                answer=qu_text if effective_lang == "qu" else es_text,
+                translation=TranslationInfo(
+                    language="qu" if effective_lang == "es" else "es",
+                    dialect=dialect,
+                    text=qu_text if effective_lang == "es" else es_text,
+                    validated=True,
+                    notes="Saludo y bienvenida conversacional natural."
+                ),
+                sources=[],
+                limitations=[],
+                requires_human_review=False,
+                next_steps=[
+                    "Escribe o formula tu duda legal (por ejemplo: derechos laborales, alimentos, denuncias o trámites).",
+                    "Puedes hablar o escribir en español o quechua según tu preferencia."
+                ]
+            )
+
+        return None, None
+
+    @classmethod
     def process_consultation(cls, request: ChatRequest) -> ChatResponse:
         user_query = request.query.strip()
         
@@ -29,9 +164,6 @@ class AIService:
         detected_lang, confidence = LanguageService.detect_language(user_query)
         effective_lang = request.input_language if request.input_language in ("qu", "es") else detected_lang
 
-        # REGLA ESTRICTA:
-        # Si está seleccionado Español ('es'), NO se permite ni aplica variante de quechua.
-        # Si está seleccionado Quechua ('qu'), se resuelve la variante dentro de las 4 ramas.
         if effective_lang == "es":
             dialect: Optional[str] = None
             branch: Optional[str] = None
@@ -41,7 +173,14 @@ class AIService:
             branch = dialects.get_branch(dialect)
             variant_desc = dialects.variant_label(dialect)
 
-        # 2. Paso de Seguridad Jurídica & Guardrails (LegalGuard)
+        # 2. Reconocimiento de Intención Conversacional (Saludos, Agradecimientos, Despedidas)
+        conv_intent, conv_response = cls.evaluate_conversational_intent(
+            user_query, effective_lang, dialect
+        )
+        if conv_intent and conv_response:
+            return conv_response
+
+        # 3. Paso de Seguridad Jurídica & Guardrails (LegalGuard)
         is_blocked, block_reason, referral, explanation = LegalGuard.evaluate_query(user_query)
         if is_blocked:
             qu_blocked_msg = dialects.localized(

@@ -42,18 +42,30 @@ class LanguageService:
     }
 
     # Marcadores morfofonéticos y léxicos del quechua (incluyendo las 4 ramas)
+    # Nota: se excluyen letras individuales como 's' o 'm' para no confundir con plurales en español
     QUECHUA_MARKERS = [
-        # Sureño
-        "mi", "m", "si", "s", "ña", "raq", "wan", "man", "pi", "pa", "ta", "kuna", 
-        "rura", "ruwa", "yacha", "allin", "munan", "ripu", "kay", "chay", "pitaq",
-        "imata", "maypi", "maytan", "llakisqa", "qhari", "warmi", "wawa", "mama", "tata",
+        # Sureño (sufijos y raíces representativas)
+        "kuna", "manta", "paq", "rayku", "pura", "kama", "nchik", "wankuna", "yku",
+        "rura", "ruwa", "yacha", "allin", "munan", "ripu", "pitaq",
+        "imata", "maypi", "maytan", "llakisqa", "qhari", "warmi", "wawa",
+        "allillanchu", "rimaykullayki", "napaykullayki", "yanapaway", "sulpayki", "añay", "tupananchiskama",
         # Central (Áncash, Huánuco, Junín): locativo -chaw, negación -tsu, plural -kuna/-ntsik
-        "tsu", "chaw", "aa", "rkaa", "ntsik", "shpa", "shuptiyki", "kanan", "qellay", "puydinki",
+        "chaw", "rkaa", "ntsik", "shpa", "shuptiyki", "kanan", "qellay", "puydinki",
         # Norteño (Cajamarca, Inkawasi):
         "parlay", "chaymanta", "quspa",
         # Amazónico (San Martín, Loreto):
-        "kpi", "pika", "nkapak", "shka", "ñuka", "kullki", "llakta", "ushanki", "kayay"
+        "pika", "nkapak", "ñuka", "kullki", "llakta", "ushanki", "kayay"
     ]
+
+    SPANISH_COMMON_WORDS = {
+        "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del", "en", "para", "por",
+        "con", "sin", "sobre", "entre", "hacia", "desde", "hasta", "que", "como", "cuando",
+        "donde", "quien", "cual", "este", "esta", "estos", "estas", "ese", "esa", "esos", "esas",
+        "mi", "tu", "su", "mis", "tus", "sus", "nuestro", "nuestra", "yo", "usted", "ustedes",
+        "gracias", "muchas", "hola", "buenos", "dias", "tardes", "noches", "ayuda", "favor",
+        "necesito", "tengo", "puedo", "hacer", "saber", "decir", "ley", "leyes", "derecho",
+        "derechos", "policia", "denuncia", "demanda", "despido", "trabajo", "sueldo"
+    }
 
     @classmethod
     def detect_language(cls, text: str) -> Tuple[str, float]:
@@ -66,21 +78,25 @@ class LanguageService:
             return ("es", 1.0)
 
         quechua_score = 0
+        spanish_score = 0
         total_words = len(words)
 
         for w in words:
+            if w in cls.SPANISH_COMMON_WORDS:
+                spanish_score += 2
+                continue
             if w in cls.LEGAL_GLOSSARY:
-                quechua_score += 2
+                quechua_score += 3
                 continue
             for marker in cls.QUECHUA_MARKERS:
                 if w.endswith(marker) or w == marker:
-                    quechua_score += 1
+                    quechua_score += 1.5
                     break
 
-        confidence = min(quechua_score / max(total_words * 0.8, 1), 1.0)
-        if confidence >= 0.22:
+        if quechua_score > spanish_score and quechua_score >= 1.5:
+            confidence = min(quechua_score / max(total_words * 0.8, 1), 1.0)
             return ("qu", confidence)
-        return ("es", 1.0 - confidence)
+        return ("es", 1.0)
 
     @classmethod
     def normalize_quechua_to_spanish_search(cls, query_qu: str, dialect: Optional[str] = None) -> str:
