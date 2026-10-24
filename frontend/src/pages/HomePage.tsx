@@ -325,10 +325,10 @@ export const HomePage: React.FC<Props> = ({
           </div>
 
           <button
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate('/sources')}
             className="text-[#6B1D33] hover:text-[#541427] font-semibold flex items-center gap-1 hover:underline shrink-0"
           >
-            <span>{t('home.footer_link')}</span>
+            <span>{t('nav.sources')}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

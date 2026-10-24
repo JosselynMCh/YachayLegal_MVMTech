@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from '../pages/HomePage';
 import { AssistantPage } from '../pages/AssistantPage';
 import { SourcesPage } from '../pages/SourcesPage';
-import { AdminPage } from '../pages/AdminPage';
 import type { QuechuaDialect } from '../types';
 import { getSavedLang, getSavedDialect, changeLang, saveDialect } from '../i18n/i18n';
 
@@ -55,17 +54,6 @@ export const AppRouter: React.FC = () => {
           path="/sources"
           element={
             <SourcesPage
-              currentDialect={currentDialect}
-              onSelectDialect={handleSelectDialect}
-              primaryLang={primaryLang}
-              onSelectPrimaryLang={handleSelectPrimaryLang}
-            />
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <AdminPage
               currentDialect={currentDialect}
               onSelectDialect={handleSelectDialect}
               primaryLang={primaryLang}

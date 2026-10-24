@@ -10,7 +10,7 @@ interface Props {
   onSelectDialect: (d: QuechuaDialect) => void;
   primaryLang: 'qu' | 'es';
   onSelectPrimaryLang: (l: 'qu' | 'es') => void;
-  activePage?: 'inicio' | 'asistente' | 'preguntas' | 'nosotros' | 'fuentes';
+  activePage?: 'inicio' | 'asistente' | 'preguntas' | 'fuentes';
 }
 
 export const Navbar: React.FC<Props> = ({
@@ -31,7 +31,6 @@ export const Navbar: React.FC<Props> = ({
     if (location.pathname === '/') return 'inicio';
     if (location.pathname === '/assistant') return 'asistente';
     if (location.pathname === '/sources') return 'fuentes';
-    if (location.pathname === '/admin') return 'nosotros';
     return 'inicio';
   })();
 
@@ -111,18 +110,6 @@ export const Navbar: React.FC<Props> = ({
             >
               <span>{t('nav.faq')}</span>
               {current === 'preguntas' && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#6B1D33] rounded-full" />
-              )}
-            </button>
-
-            <button
-              onClick={() => navigate('/admin')}
-              className={`relative py-2 transition-colors ${
-                current === 'nosotros' ? 'text-[#6B1D33]' : 'hover:text-[#6B1D33]'
-              }`}
-            >
-              <span>{t('nav.about')}</span>
-              {current === 'nosotros' && (
                 <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#6B1D33] rounded-full" />
               )}
             </button>
