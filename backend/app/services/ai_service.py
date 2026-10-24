@@ -201,6 +201,61 @@ class AIService:
                 official_url="https://www.gob.pe/linea100",
                 is_urgent=True
             )
+        elif primary_evidence.get("category") == "familia_alimentos":
+            es_explanation = (
+                f"Conforme al {primary_evidence['article']} del {primary_evidence['title']}, "
+                "la pensión de alimentos comprende todo lo indispensable para el sustento, vivienda, vestido, "
+                "educación, salud y recreación de los hijos menores o mayores con incapacidad. "
+                "Para iniciar la demanda de pensión de alimentos no se requiere firma de abogado ni pagar aranceles judiciales en juzgados de paz letrados."
+            )
+            steps = [
+                "Presenta una demanda de alimentos ante el Juzgado de Paz Letrado de tu distrito mediante el formulario oficial gratuito del Poder Judicial.",
+                "Adjunta la partida de nacimiento del menor y constancias de gastos escolares, médicos o de vivienda.",
+                "Puedes acudir al consultorio gratuito de Defensa Pública del MINJUSDH (Fono 1884) para que te redacten la demanda sin costo."
+            ]
+            default_ref = ReferralService(
+                name=settings.DEFENSA_PUBLICA_NOMBRE,
+                phone=settings.DEFENSA_PUBLICA_FONO,
+                description="Consultorio jurídico gratuito del MINJUSDH para demandas de alimentos.",
+                official_url=settings.DEFENSA_PUBLICA_WEB,
+                is_urgent=False
+            )
+        elif primary_evidence.get("category") == "tierras_comunales":
+            es_explanation = (
+                f"De conformidad con el {primary_evidence['article']} de la {primary_evidence['title']}, "
+                "las Comunidades Campesinas y Nativas tienen personería jurídica y autonomía organizativa y territorial. "
+                "La propiedad comunal sobre sus tierras es imprescriptible y no puede ser despojada arbitrariamente por terceros ni embargada."
+            )
+            steps = [
+                "Acude a la directiva comunal y a la Asamblea General de la comunidad para verificar las actas y linderos del título de propiedad comunal.",
+                "Denuncia cualquier intento de usurpación o despojo ante la fiscalía provincial o la Defensoría del Pueblo.",
+                "Coordina con el Ministerio de Desarrollo Agrario y Riego (MIDAGRI) para titulación y georreferenciación oficial."
+            ]
+            default_ref = ReferralService(
+                name="Defensoría del Pueblo - Pueblos Indígenas y Comunidades",
+                phone="0800-15-170",
+                description="Protección de derechos colectivos y territoriales de comunidades originarias.",
+                official_url="https://www.defensoria.gob.pe",
+                is_urgent=False
+            )
+        elif primary_evidence.get("category") == "derecho_laboral":
+            es_explanation = (
+                f"Según el {primary_evidence['article']} de la {primary_evidence['title']}, "
+                "si sufres un despido sin causa justa comprobada o sin procedimiento previo, se trata de un despido arbitrario. "
+                "Tienes derecho a cobrar una indemnización equivalente a 1.5 remuneraciones por año laborado (hasta un tope de 12 sueldos) o reclamar la reposición si fuiste despedido de forma incausada o nula."
+            )
+            steps = [
+                "Solicita una Constatación Policial de Despido en la comisaría del sector dentro de los 3 días de producido el hecho.",
+                "Presenta una denuncia laboral ante la Superintendencia Nacional de Fiscalización Laboral (SUNAFIL) de forma virtual o presencial.",
+                "Cuentas con un plazo máximo de 30 días hábiles para demandar la indemnización o reposición ante el Juzgado Laboral."
+            ]
+            default_ref = ReferralService(
+                name="SUNAFIL - Fiscalización Laboral Gratuita",
+                phone="0800-1-6872",
+                description="Orientación y denuncias laborales gratuitas por despido arbitrario y falta de pago.",
+                official_url="https://www.gob.pe/sunafil",
+                is_urgent=False
+            )
         else:
             es_explanation = (
                 f"Según lo establecido en el {primary_evidence['article']} de la {primary_evidence['title']}, "

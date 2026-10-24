@@ -5,10 +5,26 @@ import { AssistantPage } from '../pages/AssistantPage';
 import { SourcesPage } from '../pages/SourcesPage';
 import { AdminPage } from '../pages/AdminPage';
 import type { QuechuaDialect } from '../types';
+import { getSavedLang, getSavedDialect, changeLang, saveDialect } from '../i18n/i18n';
 
 export const AppRouter: React.FC = () => {
-  const [currentDialect, setCurrentDialect] = useState<QuechuaDialect>('quechua_chanka');
-  const [primaryLang, setPrimaryLang] = useState<'qu' | 'es'>('qu');
+  // Restaurar idioma y dialecto guardados en localStorage
+  const [currentDialect, setCurrentDialect] = useState<QuechuaDialect>(
+    getSavedDialect() as QuechuaDialect
+  );
+  const [primaryLang, setPrimaryLang] = useState<'qu' | 'es'>(getSavedLang());
+
+  // Al cambiar idioma: actualizar i18n + persistir en localStorage
+  const handleSelectPrimaryLang = (lang: 'qu' | 'es') => {
+    setPrimaryLang(lang);
+    changeLang(lang);
+  };
+
+  // Al cambiar dialecto: persistir en localStorage
+  const handleSelectDialect = (d: QuechuaDialect) => {
+    setCurrentDialect(d);
+    saveDialect(d);
+  };
 
   return (
     <BrowserRouter>
@@ -18,9 +34,9 @@ export const AppRouter: React.FC = () => {
           element={
             <HomePage
               currentDialect={currentDialect}
-              onSelectDialect={setCurrentDialect}
+              onSelectDialect={handleSelectDialect}
               primaryLang={primaryLang}
-              onSelectPrimaryLang={setPrimaryLang}
+              onSelectPrimaryLang={handleSelectPrimaryLang}
             />
           }
         />
@@ -29,33 +45,33 @@ export const AppRouter: React.FC = () => {
           element={
             <AssistantPage
               currentDialect={currentDialect}
-              onSelectDialect={setCurrentDialect}
+              onSelectDialect={handleSelectDialect}
               primaryLang={primaryLang}
-              onSelectPrimaryLang={setPrimaryLang}
+              onSelectPrimaryLang={handleSelectPrimaryLang}
             />
           }
         />
-        <Route 
-          path="/sources" 
+        <Route
+          path="/sources"
           element={
-            <SourcesPage 
+            <SourcesPage
               currentDialect={currentDialect}
-              onSelectDialect={setCurrentDialect}
+              onSelectDialect={handleSelectDialect}
               primaryLang={primaryLang}
-              onSelectPrimaryLang={setPrimaryLang}
+              onSelectPrimaryLang={handleSelectPrimaryLang}
             />
-          } 
+          }
         />
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
-            <AdminPage 
+            <AdminPage
               currentDialect={currentDialect}
-              onSelectDialect={setCurrentDialect}
+              onSelectDialect={handleSelectDialect}
               primaryLang={primaryLang}
-              onSelectPrimaryLang={setPrimaryLang}
+              onSelectPrimaryLang={handleSelectPrimaryLang}
             />
-          } 
+          }
         />
       </Routes>
     </BrowserRouter>

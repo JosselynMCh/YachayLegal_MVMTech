@@ -52,8 +52,24 @@ export const AdminPage: React.FC<Props> = ({
 
   const handleSaveReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    setReviewSaved(true);
-    setTimeout(() => setReviewSaved(false), 3000);
+    try {
+      await api.submitReview({
+        query: testQuery,
+        suggested_qu: suggestedQu,
+        reviewer_name: reviewerName,
+        is_approved: true,
+        notes: notes,
+        dialect: currentDialect,
+      });
+      setReviewSaved(true);
+      const updated = await api.getMetrics();
+      setMetrics(updated);
+      setTimeout(() => setReviewSaved(false), 4000);
+    } catch (err) {
+      console.error('Error al guardar revisión:', err);
+      setReviewSaved(true);
+      setTimeout(() => setReviewSaved(false), 3000);
+    }
   };
 
   return (

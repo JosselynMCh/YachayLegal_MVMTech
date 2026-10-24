@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Mic, MicOff, Sparkles, CheckCircle2, RotateCcw } from 'lucide-react';
-
+import React, { useState, useRef, useEffect } from 'react';
+import { Mic, MicOff, Sparkles, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { QuechuaDialect } from '../types';
 
 interface Props {
@@ -10,17 +10,63 @@ interface Props {
   dialect?: QuechuaDialect;
 }
 
-export const VoiceRecorder: React.FC<Props> = ({ 
-  onConfirmTranscription, 
+// Tipado básico para la Web Speech Recognition API
+interface ISpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: any) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: (() => void) | null;
+  onstart: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => ISpeechRecognition;
+    webkitSpeechRecognition: new () => ISpeechRecognition;
+  }
+}
+
+function isSpeechRecognitionSupported(): boolean {
+  return typeof window !== 'undefined' &&
+    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+}
+
+function createSpeechRecognition(): ISpeechRecognition | null {
+  if (!isSpeechRecognitionSupported()) return null;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  return new SR();
+}
+
+export const VoiceRecorder: React.FC<Props> = ({
+  onConfirmTranscription,
   disabled = false,
   primaryLang = 'qu',
   dialect = 'quechua_chanka'
 }) => {
+  const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
+  const speechSupported = isSpeechRecognitionSupported();
 
-  // Muestras guiadas según idioma y las 4 ramas del quechua
+  // Limpiar reconocimiento al desmontar
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Preguntas demo según idioma y dialecto
   const DEMO_PRESETS = primaryLang === 'es' ? [
     {
       label: '1. Detención policial y defensa pública (Español)',
@@ -62,28 +108,90 @@ export const VoiceRecorder: React.FC<Props> = ({
 
   const handleStartRecording = () => {
     if (disabled) return;
-    setIsRecording(true);
+    setVoiceError(null);
 
-    setTimeout(() => {
-      setIsRecording(false);
-      let sample = "Policiakunam hap'irqawan, ¿imatan rurayman?";
-      if (primaryLang === 'es') {
-        sample = "¿Cuáles son mis derechos si la policía me detiene sin orden judicial?";
-      } else if (dialect.includes('central')) {
-        sample = "Polisiakunam hapimarqan, ¿imataraq rurashaq kikïpa shimïchaw?";
-      } else if (dialect.includes('amazonico')) {
-        sample = "Ñukata wasipi makawarkami, ¿comisariapi yanapayta mañayta ushanichu?";
-      } else if (dialect.includes('norteno')) {
-        sample = "Comisariapi hapisuptiykiqa, ¿abogadu gratuituta quwankumanchu quechua parlaptiy?";
-      }
-      setTranscription(sample);
+    if (!speechSupported) {
+      // Fallback: texto de demo
+      setIsRecording(true);
+      setTimeout(() => {
+        setIsRecording(false);
+        const sample = primaryLang === 'es'
+          ? "¿Cuáles son mis derechos si la policía me detiene sin orden judicial?"
+          : dialect.includes('central')
+            ? "Polisiakunam hapimarqan, ¿imataraq rurashaq kikïpa shimïchaw?"
+            : dialect.includes('amazonico')
+              ? "Ñukata wasipi makawarkami, ¿comisariapi yanapayta mañayta ushanichu?"
+              : dialect.includes('norteno')
+                ? "Comisariapi hapisuptiykiqa, ¿abogadu gratuituta quwankumanchu quechua parlaptiy?"
+                : "Policiakunam hap'irqawan, ¿imatan rurayman?";
+        setTranscription(sample);
+        setShowConfirmation(true);
+      }, 1500);
+      return;
+    }
+
+    // Web Speech Recognition real
+    const recognition = createSpeechRecognition();
+    if (!recognition) return;
+
+    // Intentar usar el idioma apropiado; quechua no tiene soporte oficial en la mayoría de navegadores → fallback a es-PE
+    recognition.lang = primaryLang === 'es' ? 'es-PE' : 'es-PE'; // es-PE como proxy
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const result = event.results[0][0].transcript;
+      setTranscription(result);
       setShowConfirmation(true);
-    }, 1500);
+      setIsRecording(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsRecording(false);
+      if (event.error === 'not-allowed') {
+        setVoiceError(t('voice.permission_denied'));
+      } else if (event.error === 'no-speech') {
+        // Sin voz detectada: mostrar preset
+        setVoiceError(null);
+        setTranscription('');
+      } else {
+        setVoiceError(t('voice.mic_error'));
+      }
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      if (recognitionRef.current === recognition) {
+        recognitionRef.current = null;
+      }
+    };
+
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch {
+      setVoiceError(t('voice.mic_error'));
+      setIsRecording(false);
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    setIsRecording(false);
   };
 
   const handleSelectPreset = (presetText: string) => {
     setTranscription(presetText);
     setShowConfirmation(true);
+    setVoiceError(null);
   };
 
   const handleConfirm = () => {
@@ -101,42 +209,57 @@ export const VoiceRecorder: React.FC<Props> = ({
 
   return (
     <div className="w-full space-y-3">
-      {/* Botón principal de voz grande y accesible */}
+      {!speechSupported && (
+        <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{t('voice.no_support')}</span>
+        </div>
+      )}
+
+      {voiceError && (
+        <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{voiceError}</span>
+        </div>
+      )}
+
       {!showConfirmation ? (
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <button
-            onClick={handleStartRecording}
-            disabled={disabled || isRecording}
+            onClick={isRecording ? handleStopRecording : handleStartRecording}
+            disabled={disabled}
             className={`w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-3.5 rounded-2xl font-bold text-sm shadow-sm transition-all duration-200 border ${
               isRecording
                 ? 'bg-rose-600 text-white animate-pulse border-rose-600'
                 : 'bg-[#FDF2F4] hover:bg-[#FCE7EC] text-[#6B1D33] border-[#F5E6EB] hover:border-[#6B1D33]/40'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
+            aria-label={isRecording ? t('voice.listening') : t('voice.start')}
           >
             {isRecording ? (
               <>
                 <MicOff className="w-5 h-5" />
-                <span>Uyarinakushan... (Escuchando en Quechua)</span>
+                <span>{t('voice.listening')}</span>
               </>
             ) : (
               <>
                 <Mic className="w-5 h-5 text-[#6B1D33]" />
-                <span>Kunkaykiwan rimay (Hablar por voz)</span>
+                <span>{t('voice.start')}</span>
               </>
             )}
           </button>
 
-          {/* Menú de selección rápida de preguntas en Quechua para el jurado */}
+          {/* Selector de preguntas demo */}
           <div className="w-full sm:flex-1 relative">
             <select
               onChange={(e) => {
                 if (e.target.value) handleSelectPreset(e.target.value);
+                e.target.value = '';
               }}
               defaultValue=""
               className="w-full bg-white border border-slate-200 text-[#5B616E] text-xs rounded-2xl px-3.5 py-3 focus:outline-none focus:border-[#6B1D33] cursor-pointer shadow-sm"
             >
               <option value="" disabled>
-                ✨ O elige una pregunta de prueba validada en Quechua (Demo para jurado)...
+                {primaryLang === 'qu' ? t('voice.preset_placeholder_qu') : t('voice.preset_placeholder_es')}
               </option>
               {DEMO_PRESETS.map((p, idx) => (
                 <option key={idx} value={p.text_qu}>
@@ -147,15 +270,15 @@ export const VoiceRecorder: React.FC<Props> = ({
           </div>
         </div>
       ) : (
-        /* Paso 8.1 PDF: Confirmación y edición previa antes de consultar */
+        /* Confirmación y edición previa antes de consultar */
         <div className="bg-white border border-[#6B1D33]/40 rounded-2xl p-4 shadow-md">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-[#6B1D33] text-xs font-semibold">
               <Sparkles className="w-4 h-4" />
-              <span>Rimarisqaykita qhawariy (Revisa tu transcripción antes de consultar)</span>
+              <span>{t('voice.review_label')}</span>
             </div>
             <span className="text-[10px] bg-[#FDF2F4] text-[#6B1D33] border border-[#F5E6EB] px-2.5 py-0.5 rounded-full font-semibold">
-              Voz en Quechua detectada
+              {primaryLang === 'qu' ? t('voice.detected_qu') : t('voice.detected_es')}
             </span>
           </div>
 
@@ -173,14 +296,14 @@ export const VoiceRecorder: React.FC<Props> = ({
               className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Kutipay / Cancelar</span>
+              <span>{t('voice.cancel')}</span>
             </button>
             <button
               onClick={handleConfirm}
               className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-[#6B1D33] hover:bg-[#541427] text-white flex items-center gap-1.5 shadow-md shadow-[#6B1D33]/20"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Tapukuy / Consultar ahora</span>
+              <span>{t('voice.confirm')}</span>
             </button>
           </div>
         </div>

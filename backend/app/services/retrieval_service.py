@@ -227,6 +227,133 @@ OFFICIAL_LEGAL_CORPUS = [
             "Constitución Art. 2, Inc. 19: Kikin runashimipi rimana derecho (Quechua Amazónico).\n"
             "Tukuy llaktakunam kikin runashimipi maykan autoridad ñawpakpi rimayta ushanchik, shimi tikrakpa yanapaywan."
         )
+    },
+    {
+        "document_id": "cc-art472-alimentos",
+        "title": "Código Civil del Perú - Decreto Legislativo Nº 295",
+        "issuer": "Congreso de la República / Presidencia",
+        "official_url": "https://spij.minjus.gob.pe/spij-ext-web/#/detallenorma/H682689",
+        "article": "Artículo 472: Noción de alimentos y deber de asistencia a los hijos",
+        "publication_date": "1984-11-14",
+        "category": "familia_alimentos",
+        "keywords": "alimentos pension comida educacion colegio hijo hija sustento demanda padre madre manutencion penshon mikhuna",
+        "content_es": (
+            "Se entiende por alimentos lo que es indispensable para el sustento, habitación, "
+            "vestido, educación, instrucción y capacitación para el trabajo, asistencia médica y psicológica y recreación, "
+            "según la situación y posibilidades de la familia. "
+            "También los gastos del embarazo de la madre desde la concepción hasta la etapa de postparto."
+        ),
+        "content_qu_chanka": (
+            "Código Civil Art. 472: Mikhuna hayñi (Pensión de Alimentos).\n"
+            "Mikhunamanta rimaspaqa manam mikhuyllachu: wasi, pacha, hampikuy, yachaywasi, "
+            "wawakunapa pukllayninpas kay kamachikuypim kachkan. "
+            "Taytaqa utaq mamaqa wawakuna uywaytam cumplinan, manam saqenanpashchu."
+        ),
+        "content_qu_collao": (
+            "Código Civil Art. 472: Mikhuna hayñi wawakunapaq.\n"
+            "Mikhunaqa manan mikhunallachu: wasi, p'acha, hampina, yachaywasipi yachay ima wawakunapaq. "
+            "Tayta mana qullqita qoptinqa juzgadopi demandata churanan."
+        ),
+        "content_qu_central": (
+            "Código Civil Art. 472: Mikhuna derechu wambrantsikkunapaq (Quechua Central).\n"
+            "Mikuypita rirparqa manam mikuyllatsu: wayi, ratash, hampikuy, yachaywasi y pukllaykunapis kaykamachikuychawmi. "
+            "Taytaqa wambrankunata mikuyninta qonanmi obligacionnin."
+        ),
+        "content_qu_norteno": (
+            "Código Civil Art. 472: Mikhuna hayñi wawakunapaq (Quechua Norteño).\n"
+            "Mikhunata rimaspaqa manam mikhuyllachu: wasi, pacha, hampikuy, yachaywasi wawakunapaq. "
+            "Tayta manachus qullqita quptinqa juezpaman rispa mañakunki."
+        ),
+        "content_qu_amazonico": (
+            "Código Civil Art. 472: Mikuypak derecho wawakunapak (Quechua Amazónico).\n"
+            "Mikuymanta rimakpika manam mikuylachu: wasi, llachapa, hampina, yachana wasi wawakunapak. "
+            "Tayta mana kullkita kukpika juezpa ñawpakpi mañankapak ushanki."
+        )
+    },
+    {
+        "document_id": "const-art89-comunidades",
+        "title": "Constitución Política del Perú de 1993",
+        "issuer": "Congreso Constituyente Democrático",
+        "official_url": "https://www.gob.pe/institucion/presidencia/normas-legales/111867-constitucion-politica-del-peru",
+        "article": "Artículo 89: Comunidades Campesinas y Nativas, y protección de sus tierras",
+        "publication_date": "1993-12-30",
+        "category": "tierras_comunales",
+        "keywords": "comunidad campesina nativa tierra comunal territorio linderos asamblea propiedad imprescriptible inembargable allpa chakra",
+        "content_es": (
+            "Las Comunidades Campesinas y las Nativas tienen existencia legal y son personas jurídicas. "
+            "Son autónomas en su organización, en el trabajo comunal y en el uso y la libre disposición de sus tierras, "
+            "así como en lo económico y administrativo. "
+            "La propiedad de sus tierras es imprescriptible, salvo en el caso de abandono. "
+            "El Estado respeta la identidad cultural de las Comunidades Campesinas y Nativas."
+        ),
+        "content_qu_chanka": (
+            "Constitución Art. 89: Ayllu llaqtakunapa allpan amachasqa (Comunidades Campesinas).\n"
+            "Ayllu llaqtakuna (comunidades campesinas y nativas) kikin kamachikuyniyoqmi kanku allpankupi, "
+            "llamk'ayninkupi hinallataq linderunkunapi. "
+            "Comunidadpa allpanqa manam pipas qechunmankichu nitaq embarganmankichu, Estadoqa respetananmi."
+        ),
+        "content_qu_collao": (
+            "Constitución Art. 89: Ayllukunaq allpan hayñin.\n"
+            "Comunidad campesina kikin kamachiyniyoqmi allpankumanta, llamk'aymanta. "
+            "Allpankutaqa manan pipas qechuyta atinchu, Estadoqa allintan amachanan."
+        ),
+        "content_qu_central": (
+            "Constitución Art. 89: Ayllukunapa allpan tsapay (Quechua Central).\n"
+            "Ayllukuna (comunidades campesinas) kikin mandakuyyuqmi allpankunachaw, linderunkunachaw y ayni llamkaychaw. "
+            "Comunidadpa allpantaqa manam pipis qechunmantsu nitaq suwanmantsu."
+        ),
+        "content_qu_norteno": (
+            "Constitución Art. 89: Ayllukunapa allpan amachasqa (Quechua Norteño).\n"
+            "Comunidad campesinakuna allpankunata kikin kamachinku. "
+            "Ayllupa allpantaqa manam pipas qechuyta atinchu, Estadoqa respetananmi."
+        ),
+        "content_qu_amazonico": (
+            "Constitución Art. 89: Ayllukunapak allpa amachana (Quechua Amazónico).\n"
+            "Nativa y campesina ayllukuna allpankunata kikin mandankuna. "
+            "Ayllupak allpata mana pipas kichuyta ushanchu, Estado respetanka."
+        )
+    },
+    {
+        "document_id": "lpcl-dl728-despido",
+        "title": "Ley de Productividad y Competitividad Laboral - D. Leg. Nº 728",
+        "issuer": "Ministerio de Trabajo y Promoción del Empleo (MTPE)",
+        "official_url": "https://spij.minjus.gob.pe/spij-ext-web/#/detallenorma/H682701",
+        "article": "Artículo 34: Despido arbitrario e indemnización laboral",
+        "publication_date": "1997-03-27",
+        "category": "derecho_laboral",
+        "keywords": "despido trabajo patron empresa indemnizacion liquidacion sueldo sunafil contrato laboral llamkay llamkana",
+        "content_es": (
+            "El despido del trabajador fundado en causa justa contemplada en la ley debe ser comprobado por el empleador. "
+            "Si el despido es arbitrario por no haberse expresado causa o no poderse demostrar esta en juicio, "
+            "el trabajador tiene derecho al pago de la indemnización equivalente a una remuneración y media ordinaria mensual por cada año completo de servicios, "
+            "sin perjuicio de recurrir ante la SUNAFIL o el Poder Judicial."
+        ),
+        "content_qu_chanka": (
+            "Ley Laboral D. Leg. 728 Art. 34: Llamk'aymanta mana rasonwan qarqusqa (Despido Arbitrario).\n"
+            "Patrón o empresa mana allin kaqta llamk'aymanta qarqusuptiykiqa, indemnización nisqata "
+            "(sapa wata llamk'asqaykimanta huk sueldo y mediatam) qosunayki. "
+            "SUNAFIL nisqaman rispam chatakuyta atinki mana qullqillawan."
+        ),
+        "content_qu_collao": (
+            "Ley Laboral D. Leg. 728 Art. 34: Llamk'anamanta qarqusqa.\n"
+            "Mana huchaykimanta patron qarqusuqtiykiqa, indemnización qullqita mañakunki. "
+            "SUNAFIL kamachiqman chaypacha willakuyta atinki yanapasunaykipaq."
+        ),
+        "content_qu_central": (
+            "Ley Laboral D. Leg. 728 Art. 34: Llamkaypita mana rasunwan qarqushqa (Quechua Central).\n"
+            "Patrun mana allin rasonwan llamkaynikipita qarqushuptiykiqa, indemnizacion qellaytam qoshunki. "
+            "SUNAFIL-man aywarmi willakuyta puydinki mana qellayta paganaykipa."
+        ),
+        "content_qu_norteno": (
+            "Ley Laboral D. Leg. 728 Art. 34: Llamkaymanta qarqusqa (Quechua Norteño).\n"
+            "Patron mana razonninwan llamkaymanta qarqusuptiykiqa, indemnizacion qullqita qusunki. "
+            "SUNAFIL-man rinki willakuq yanapasunaykipaq."
+        ),
+        "content_qu_amazonico": (
+            "Ley Laboral D. Leg. 728 Art. 34: Llamkanamanta llukshichiska (Quechua Amazónico).\n"
+            "Patrón mana rasonwan llamkaymanta llukshichikpika, kullkita indemnización kushka kanka. "
+            "SUNAFIL-man rina willankapak mana kullkiwan."
+        )
     }
 ]
 

@@ -75,5 +75,35 @@ export const api = {
       body: JSON.stringify({ user_query: userQuery, issue_type: issueType, comment }),
     });
     return await res.json();
+  },
+
+  async submitReview(data: {
+    query: string;
+    suggested_qu: string;
+    reviewer_name: string;
+    is_approved?: boolean;
+    notes?: string;
+    dialect?: string;
+  }): Promise<any> {
+    const res = await fetch(`${API_BASE_URL}/admin/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Error al registrar revisión');
+    return await res.json();
+  },
+
+  async transcribeAudio(audioBlob: Blob, dialect?: string): Promise<{ transcription: string; confidence: number }> {
+    const formData = new FormData();
+    formData.append('audio_file', audioBlob, 'grabacion.webm');
+    if (dialect) formData.append('dialect', dialect);
+
+    const res = await fetch(`${API_BASE_URL}/voice/transcribe`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Error al transcribir audio');
+    return await res.json();
   }
 };

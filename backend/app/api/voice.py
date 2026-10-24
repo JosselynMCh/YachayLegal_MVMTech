@@ -22,13 +22,22 @@ def get_preset_samples():
 
 @router.post("/transcribe")
 async def transcribe_audio_input(
+    audio_file: Optional[UploadFile] = File(None),
     sample_id: Optional[str] = Form(None),
     dialect: Optional[str] = Form("quechua_chanka")
 ):
     """
-    Paso 8.1 y 8.2 (PDF Pág. 9): Transcribe audio y permite que el usuario
-    confirme o edite el texto antes de procesar la consulta jurídica.
+    Paso 8.1 y 8.2 (PDF Pág. 9): Transcribe audio (archivo binario o muestra)
+    y permite que el usuario confirme o edite el texto antes de procesar la consulta jurídica.
     """
+    if audio_file:
+        audio_bytes = await audio_file.read()
+        return await SpeechService.transcribe_audio_bytes(
+            audio_bytes=audio_bytes,
+            filename=audio_file.filename or "recording.webm",
+            dialect=dialect
+        )
+
     if sample_id:
         for s in SpeechService.get_preset_samples():
             if s["id"] == sample_id:

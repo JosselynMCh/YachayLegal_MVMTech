@@ -1,19 +1,19 @@
-from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Depends
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 from app.services.retrieval_service import RetrievalService
 from app.core.config import settings
+from app.models.database import get_db
+from app.models.models import Feedback
 
 router = APIRouter(tags=["Documentos y Servicios Oficiales"])
 
 class FeedbackRequest(BaseModel):
-    message_id: str | None = None
-    user_query: str
-    issue_type: str  # "bad_translation", "incorrect_law", "unclear_explanation", "other"
-    comment: str | None = None
-
-# Lista de feedback en memoria para desarrollo
-feedback_db: List[Dict[str, Any]] = []
+    message_id: Optional[str] = None
+    user_query: str = Field(..., min_length=2, max_length=1000)
+    issue_type: str = Field(..., description="bad_translation, incorrect_law, unclear_explanation, other")
+    comment: Optional[str] = Field(None, max_length=1500)
 
 @router.get("/sources")
 def list_all_sources():
@@ -65,8 +65,22 @@ def list_legal_aid_services():
     ]
 
 @router.post("/feedback")
-def submit_user_feedback(req: FeedbackRequest):
+def submit_user_feedback(req: FeedbackRequest, db: Session = Depends(get_db)):
     """Permite al ciudadano o revisor reportar una respuesta incorrecta o traducción imprecisa."""
-    item = req.dict()
-    feedback_db.append(item)
-    return {"status": "success", "message": "Feedback registrado correctamente para auditoría y mejora continua."}
+    try:
+        feedback_entry = Feedback(
+            user_query=req.user_query.strip(),
+            issue_type=req.issue_type,
+            comment=req.comment.strip() if req.comment else None
+        )
+        db.add(feedback_entry)
+        db.commit()
+        db.refresh(feedback_entry)
+        return {
+            "status": "success", 
+            "id": feedback_entry.id,
+            "message": "Feedback registrado correctamente en la base de datos para auditoría y mejora continua."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"No se pudo guardar el reporte: {str(e)}")
