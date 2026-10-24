@@ -3,8 +3,14 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 from app.models.models import Base, LegalDocument, LegalChunk
 
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(settings.DATABASE_URL, connect_args=connect_args)
+import os
+
+db_url = settings.DATABASE_URL
+if os.environ.get("VERCEL") and db_url.startswith("sqlite:///./"):
+    db_url = "sqlite:////tmp/yachay_legal.db"
+
+connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+engine = create_engine(db_url, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():

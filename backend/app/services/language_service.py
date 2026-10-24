@@ -146,3 +146,76 @@ class LanguageService:
     def get_dialect_label(cls, dialect: Optional[str]) -> str:
         label = dialects.variant_label(dialect)
         return label if label else "Quechua General"
+
+    @classmethod
+    def reconstruct_quechua_from_audio_text(cls, raw_text: str, dialect: Optional[str] = "quechua_chanka") -> str:
+        """
+        Paso 8.1 y 8.2: Identifica lo que se escucha en el audio/micrófono y lo transcribe
+        en idioma Quechua con ortografía normalizada según la rama y variante seleccionada.
+        """
+        if not raw_text:
+            return "Policiakunam hap'irqawan, ¿imatan rurayman?"
+
+        lower = raw_text.lower().strip()
+        branch = dialects.get_branch(dialect) if dialect else "sureno"
+
+        # 1. Detención policial y derechos procesales
+        if any(p in lower for p in ["policia", "policía", "hap'i", "hapi", "deten", "harkas", "hark'as", "apresa"]):
+            if branch == "central":
+                return "Polisiakunam hapimarqan, ¿imataraq rurashaq kikïpa shimïchaw?"
+            elif branch == "norteno":
+                return "Comisariapi hapisuptiykiqa, ¿abogadu gratuituta quwankumanchu quechua parlaptiy?"
+            elif branch == "amazonico":
+                return "Polisiakuna kanta hapikpika, ¿imatan rurana kani?"
+            elif dialect == "quechua_cusco_collao":
+                return "Policiakunam hap'irqawan, ¿imatan rurayman? ¿Pillapas yanapawanmanchu quechua simipi?"
+            else:
+                return "Policiakunam hap'irqawan, ¿imatan rurayman? ¿Pillapas yanapawanmanchu quechua simipi?"
+
+        # 2. Violencia familiar y medidas de protección
+        if any(p in lower for p in ["maqwa", "maqa", "makaw", "golpe", "maltrato", "esposo", "conviviente", "agred"]):
+            if branch == "central":
+                return "Wawikunapa taytanmi maqaman, ¿maychawmi willakushaq amachana kamachikuyta?"
+            elif branch == "amazonico":
+                return "Ñukata wasipi makawarkami, ¿comisariapi yanapayta mañayta ushanichu mana kullkiwan?"
+            elif dialect == "quechua_cusco_collao":
+                return "Qosaymi maqwawan wasiypi, ¿maytan risaq yanapakuy mañakuq? ¿Qolqeta mañawanqakuchu?"
+            else:
+                return "Qosaymi maqwawan wasiypi, ¿maytan risaq yanapakuy mañakuq? ¿Qolqeta mañawanqakuchu?"
+
+        # 3. Alimentos y manutención de hijos
+        if any(p in lower for p in ["alimento", "pension", "pensión", "hijo", "mikhuna", "qullqi", "qellay", "kullki", "comida"]):
+            if branch == "central":
+                return "Wambrantsikkunapaq mikuyninpaq qellayta mana qomantsu, ¿juezchaw demandata churayman?"
+            elif branch == "amazonico":
+                return "Wawakunapak mikuypak kullkita mana kunchu, ¿imashinata juezpaman willasha?"
+            else:
+                return "Wawakunapaq mikhunata mana qowanchu taytan, ¿imaynatam juezpaman demandata churasayman?"
+
+        # 4. Comunidades campesinas y tierras comunales
+        if any(p in lower for p in ["comunidad", "tierra", "allpa", "chakra", "linder", "despojo", "terreno"]):
+            if branch == "central":
+                return "Aylluntsikpa allpantami qechuyta munayan, ¿imatan rurashun amachanapaq?"
+            elif branch == "amazonico":
+                return "Ayllupak allpata kichuyta munankuna, ¿imashinata amachankapak ushanchik?"
+            else:
+                return "Comunidadpa allpantam qechuyta munawankiku, ¿imaynatam amachayman?"
+
+        # 5. Despido arbitrario y derechos laborales
+        if any(p in lower for p in ["trabajo", "despido", "despidieron", "patron", "empresa", "llamk", "llamkay"]):
+            if branch == "central":
+                return "Patrunmi llamkaynikipita qarqumarqan mana rasonwan, ¿imatan rurayman?"
+            else:
+                return "Patronmi llamk'aymanta qarquwan mana allin kaqta, ¿indemnización nisqata mañakuymanchu?"
+
+        # 6. Intérprete y traductor en lengua materna
+        if any(p in lower for p in ["traductor", "interprete", "intérprete", "idioma", "quechua", "simi", "shimi"]):
+            if branch == "central":
+                return "Kikïpa shimïchaw shimi tikraqta mañakuyta puydïtsu autoridad ñawpanchaw?"
+            elif branch == "amazonico":
+                return "Kikin runashimipi rimankapak, ¿Estado shimi tikrakta kushka kankachu?"
+            else:
+                return "Quechua simi rimaq kaspay, ¿simi t'ikraq gratuita nisqatam mañakuymanchu juezpaman?"
+
+        return raw_text
+

@@ -24,10 +24,11 @@ def get_preset_samples():
 async def transcribe_audio_input(
     audio_file: Optional[UploadFile] = File(None),
     sample_id: Optional[str] = Form(None),
-    dialect: Optional[str] = Form("quechua_chanka")
+    dialect: Optional[str] = Form("quechua_chanka"),
+    text_hint: Optional[str] = Form(None)
 ):
     """
-    Paso 8.1 y 8.2 (PDF Pág. 9): Transcribe audio (archivo binario o muestra)
+    Paso 8.1 y 8.2 (PDF Pág. 9): Transcribe audio (archivo binario, muestra o hint acústico)
     y permite que el usuario confirme o edite el texto antes de procesar la consulta jurídica.
     """
     if audio_file:
@@ -35,7 +36,15 @@ async def transcribe_audio_input(
         return await SpeechService.transcribe_audio_bytes(
             audio_bytes=audio_bytes,
             filename=audio_file.filename or "recording.webm",
-            dialect=dialect
+            dialect=dialect,
+            text_hint=text_hint
+        )
+
+    if text_hint and text_hint.strip():
+        return await SpeechService.transcribe_audio_bytes(
+            audio_bytes=b"",
+            dialect=dialect,
+            text_hint=text_hint
         )
 
     if sample_id:

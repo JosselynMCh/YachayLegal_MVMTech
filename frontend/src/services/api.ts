@@ -1,6 +1,6 @@
 import type { ChatResponse, LegalServiceInfo, QualityMetrics, SourceCitation } from '../types';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const api = {
   async checkHealth(): Promise<{ status: string }> {
@@ -94,10 +94,17 @@ export const api = {
     return await res.json();
   },
 
-  async transcribeAudio(audioBlob: Blob, dialect?: string): Promise<{ transcription: string; confidence: number }> {
+  async transcribeAudio(
+    audioBlob?: Blob | null,
+    dialect?: string,
+    textHint?: string
+  ): Promise<{ transcription: string; confidence: number; dialect?: string; source?: string }> {
     const formData = new FormData();
-    formData.append('audio_file', audioBlob, 'grabacion.webm');
+    if (audioBlob) {
+      formData.append('audio_file', audioBlob, 'grabacion.webm');
+    }
     if (dialect) formData.append('dialect', dialect);
+    if (textHint) formData.append('text_hint', textHint);
 
     const res = await fetch(`${API_BASE_URL}/voice/transcribe`, {
       method: 'POST',
