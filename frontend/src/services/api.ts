@@ -1,4 +1,5 @@
 import type { ChatResponse, LegalServiceInfo, QualityMetrics, SourceCitation } from '../types';
+import { runLocalRAG } from './localRag';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -23,15 +24,21 @@ export const api = {
       dialect: inputLanguage === 'es' ? null : (dialect || 'quechua_chanka')
     };
 
-    const res = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      throw new Error(`Error en el servidor: ${res.statusText}`);
+    try {
+      const res = await fetch(`${API_BASE_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      console.warn(`Backend responded with status ${res.status}. Falling back to client-side RAG engine.`);
+      return runLocalRAG(query, inputLanguage, dialect);
+    } catch (err) {
+      console.warn('Network error reaching backend. Falling back to client-side RAG engine:', err);
+      return runLocalRAG(query, inputLanguage, dialect);
     }
-    return await res.json();
   },
 
   async getDialects(): Promise<any> {
