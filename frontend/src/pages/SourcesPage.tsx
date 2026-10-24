@@ -13,23 +13,7 @@ interface Props {
   onSelectPrimaryLang: (l: 'qu' | 'es') => void;
 }
 
-// Tipo extendido para el corpus completo del backend
-interface LegalCorpusItem {
-  document_id: string;
-  title: string;
-  issuer: string;
-  official_url: string;
-  article: string;
-  publication_date?: string;
-  category?: string;
-  content_es?: string;
-  content_qu_chanka?: string;
-  content_qu_collao?: string;
-  content_qu_central?: string;
-  content_qu_norteno?: string;
-  content_qu_amazonico?: string;
-  article_content?: string;
-}
+import { FALLBACK_LEGAL_SERVICES, FALLBACK_OFFICIAL_SOURCES, type LegalCorpusItem } from '../constants/legalData';
 
 export const SourcesPage: React.FC<Props> = ({
   currentDialect,
@@ -39,33 +23,34 @@ export const SourcesPage: React.FC<Props> = ({
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [sources, setSources] = useState<LegalCorpusItem[]>([]);
-  const [services, setServices] = useState<LegalServiceInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sources, setSources] = useState<LegalCorpusItem[]>(FALLBACK_OFFICIAL_SOURCES);
+  const [services, setServices] = useState<LegalServiceInfo[]>(FALLBACK_LEGAL_SERVICES);
+  const [loading, setLoading] = useState(false);
   const [errorSources, setErrorSources] = useState(false);
   const [errorServices, setErrorServices] = useState(false);
   const [articleTabs, setArticleTabs] = useState<Record<number, string>>({});
 
   useEffect(() => {
     async function loadData() {
-      setLoading(true);
+      if (sources.length === 0) setLoading(true);
       const [srcResult, srvResult] = await Promise.allSettled([
         api.getSources(),
         api.getServices()
       ]);
 
-      if (srcResult.status === 'fulfilled') {
+      if (srcResult.status === 'fulfilled' && Array.isArray(srcResult.value) && srcResult.value.length > 0) {
         setSources(srcResult.value as unknown as LegalCorpusItem[]);
-      } else {
-        setErrorSources(true);
+        setErrorSources(false);
+      } else if (sources.length === 0) {
+        setSources(FALLBACK_OFFICIAL_SOURCES);
       }
 
-      if (srvResult.status === 'fulfilled') {
+      if (srvResult.status === 'fulfilled' && Array.isArray(srvResult.value) && srvResult.value.length > 0) {
         setServices(srvResult.value);
-      } else {
-        setErrorServices(true);
+        setErrorServices(false);
+      } else if (services.length === 0) {
+        setServices(FALLBACK_LEGAL_SERVICES);
       }
-
       setLoading(false);
     }
     loadData();
